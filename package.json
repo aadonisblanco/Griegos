@@ -1,0 +1,13 @@
+{
+  "name": "griegos-store",
+  "version": "1.0.0",
+  "description": "Backend GRIEGOS Store en Cloudflare Workers (productos y carrito)",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}

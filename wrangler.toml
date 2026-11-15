@@ -1,0 +1,23 @@
+name = "griegos"
+main = "src/index.js"
+compatibility_date = "2026-06-01"
+
+[assets]
+directory = "public"
+boundary = "/"
+
+# ---------------------------------------------------------------------------
+# OPCIONAL: persistencia del carrito en Cloudflare KV.
+# Si no lo configuras, el carrito se guarda en memoria del Worker (se reinicia
+# en cada despliegue/cold start) y el frontend sigue usando localStorage.
+#
+# Para activarlo:
+# 1. Ve a Cloudflare Dashboard > Workers & Pages > KV > Create a namespace.
+# 2. Copia el ID y el ID de preview y pégalos abajo.
+# 3. Despliega de nuevo.
+#
+# [[kv_namespaces]]
+# binding = "CART_KV"
+# id = "TU_KV_NAMESPACE_ID"
+# preview_id = "TU_KV_PREVIEW_ID"
+# ---------------------------------------------------------------------------
