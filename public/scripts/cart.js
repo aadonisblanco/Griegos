@@ -14,6 +14,8 @@
   const STORAGE_KEY =
     CONFIG.cart?.storageKey || "griegos_store_cart_v1";
 
+  const API_BASE = "https://oficial.griegos.workers.dev/api";
+
   const SELECTORS = {
 
     productGrid: "#product-grid",
@@ -202,122 +204,93 @@
 
   /* ALMACENAMIENTO */
 
-  function loadCart() {
+  async function loadCart() {
 
+    /* 1. Intentar cargar desde el backend de Cloudflare */
     try {
 
-      const raw = window.localStorage.getItem(
-        STORAGE_KEY
-      );
+      const res = await fetch(`${API_BASE}/cart`);
 
-      if (!raw) {
+      const data = await res.json();
 
-        state.items = [];
+      if (data && Array.isArray(data.items) && data.items.length > 0) {
 
-        return;
+        state.items = data.items;
 
       }
-
-      const parsed = JSON.parse(raw);
-
-      if (!Array.isArray(parsed)) {
-
-        state.items = [];
-
-        return;
-
-      }
-
-      const restored = [];
-
-      parsed.forEach(saved => {
-
-        if (
-          !saved ||
-          saved.id === undefined
-        ) {
-          return;
-        }
-
-        const product = PRODUCTS.getById
-          ? PRODUCTS.getById(saved.id)
-          : null;
-
-        if (
-          !product ||
-          !PRODUCTS.isAvailable?.(product) ||
-          getStockLimit(product) <= 0
-        ) {
-
-          return;
-
-        }
-
-        const requestedQuantity = Math.max(
-
-          getMinimumQuantity(),
-
-          Math.floor(toNumber(saved.quantity, 1))
-
-        );
-
-        const quantity = Math.min(
-
-          requestedQuantity,
-
-          getStockLimit(product)
-
-        );
-
-        if (quantity < getMinimumQuantity()) {
-          return;
-        }
-
-        const existing = restored.find(
-          item => item.id === String(product.id)
-        );
-
-        if (existing) {
-
-          existing.quantity = Math.min(
-
-            existing.quantity + quantity,
-
-            getStockLimit(product)
-
-          );
-
-        } else {
-
-          restored.push(
-            getProductSnapshot(product, quantity)
-          );
-
-        }
-
-      });
-
-      state.items = restored;
-
-      saveCart();
 
     } catch (error) {
 
       console.error(
-        "GRIEGOS STORE: no se pudo recuperar el carrito guardado.",
+        "GRIEGOS STORE: no se pudo recuperar el carrito del backend.",
+        error
+      );
+
+    }
+
+    /* 2. Respaldo: cargar desde localStorage si el backend no tuvo ítems */
+    try {
+
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+
+      if (raw && state.items.length === 0) {
+
+        const parsed = JSON.parse(raw);
+
+        if (Array.isArray(parsed)) {
+
+          state.items = parsed;
+
+        }
+
+      }
+
+    } catch (error) {
+
+      console.error(
+        "GRIEGOS STORE: no se pudo leer el carrito local.",
         error
       );
 
       state.items = [];
 
-      announce("No se pudo recuperar el carrito guardado. Puedes iniciar uno nuevo.");
-
     }
+
+    /* 3. Persistir en ambos lados y renderizar */
+    saveCart();
+
+    render();
 
   }
 
-  function saveCart() {
+  async function saveCart() {
 
+    /* 1. Guardar en el backend de Cloudflare */
+    try {
+
+      await fetch(`${API_BASE}/cart`, {
+
+        method: "POST",
+
+        headers: { "Content-Type": "application/json" },
+
+        body: JSON.stringify(state.items)
+
+      });
+
+    } catch (error) {
+
+      console.error(
+
+        "GRIEGOS STORE: no se pudo guardar el carrito en el backend.",
+
+        error
+
+      );
+
+    }
+
+    /* 2. También guardar en localStorage como respaldo */
     try {
 
       window.localStorage.setItem(
@@ -333,18 +306,27 @@
     } catch (error) {
 
       console.error(
+
         "GRIEGOS STORE: el navegador no permitió guardar el carrito.",
+
         error
+
       );
 
       announce(
+
         "No se pudo guardar el carrito en este navegador."
+
       );
 
       const warning = document.querySelector("#storage-warning");
+
       if (warning) {
+
         warning.hidden = false;
+
         warning.textContent = "El navegador no permite guardar el carrito. Se conservará solo durante esta visita.";
+
       }
 
       return false;

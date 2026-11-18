@@ -15,6 +15,8 @@
 
   const CALCULATORS = window.GRIEGOS_CALCULATORS || {};
 
+  const API_BASE = "https://oficial.griegos.workers.dev/api";
+
   const SELECTORS = {
 
     menuToggle: "#menu-toggle",
@@ -1048,7 +1050,7 @@
     }
   }
 
-  function submitCheckout(event) {
+  async function submitCheckout(event) {
 
     event.preventDefault();
 
@@ -1095,10 +1097,61 @@
 
     const order = getOrderDetails();
 
+    /* Enviar pedido al backend de Cloudflare para obtener enlace de WhatsApp */
+    let backendWhatsappUrl = null;
+
+    try {
+
+      const res = await fetch(`${API_BASE}/order`, {
+
+        method: "POST",
+
+        headers: { "Content-Type": "application/json" },
+
+        body: JSON.stringify({
+
+          customerName: order.customer.name,
+
+          customerPhone: order.customer.phone,
+
+          customerMunicipality: order.customer.municipality,
+
+          items: order.items,
+
+          deliveryMode: order.delivery.mode,
+
+          paymentMethod: order.payment ? order.payment.id : "",
+
+          notes: order.delivery.notes || ""
+
+        })
+
+      });
+
+      const data = await res.json();
+
+      if (data.ok && data.whatsappUrl) {
+
+        backendWhatsappUrl = data.whatsappUrl;
+
+      }
+
+    } catch (error) {
+
+      console.error(
+
+        "GRIEGOS STORE: no se pudo preparar el pedido en el backend.",
+
+        error
+
+      );
+
+    }
+
     const message =
       buildWhatsAppOrderMessage(order);
 
-    const url = getWhatsAppUrl(
+    const url = backendWhatsappUrl || getWhatsAppUrl(
       orderPhone,
       message
     );
