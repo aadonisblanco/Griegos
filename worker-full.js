@@ -1,0 +1,1203 @@
+/* =========================================================
+   GRIEGOS STORE — BACKEND COMPLETO (Cloudflare Worker)
+   Archivo listo para pegar en el editor del Worker "oficial"
+   Incluye: productos (catálogo completo), carrito (KV + memoria), pedidos
+   ========================================================= */
+
+const PRODUCTS = [
+  {
+    id: "suplemento-001",
+    name: "Creatina Micronizada Optimum Nutrition (ON) – 300 g – 60 Servicios",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "creatinas",
+    subcategoryLabel: "Creatinas",
+    price: 25,
+    image: "/assets/products/suplements/creatina-micronizada-optimum-nutrition-300-g.png",
+    description: "Creatina micronizada Optimum Nutrition. Presentación de 300 g y 60 servicios.",
+    stock: 2,
+    available: true,
+    featured: false,
+    badge: "",
+    brand: "Optimum Nutrition",
+    tags: ["creatina", "monohidratada", "optimum nutrition", "on"],
+  },
+  {
+    id: "suplemento-002",
+    name: "Creatina Micronizada Optimum Nutrition (ON) – 600 g – 120 Servicios",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "creatinas",
+    subcategoryLabel: "Creatinas",
+    price: 45,
+    image: "/assets/products/suplements/creatina-micronizada-optimum-nutrition-600-g.png",
+    description: "Creatina micronizada Optimum Nutrition. Presentación de 600 g y 120 servicios.",
+    stock: 2,
+    available: true,
+    featured: false,
+    badge: "",
+    brand: "Optimum Nutrition",
+    tags: ["creatina", "monohidratada", "optimum nutrition", "on"],
+  },
+  {
+    id: "suplemento-003",
+    name: "Creatina Monohidratada Nutrex – 300 g – 60 Servicios",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "creatinas",
+    subcategoryLabel: "Creatinas",
+    price: 25,
+    image: "/assets/products/suplements/creatina-monohidratada-nutrex-300-g.png",
+    description: "Creatina monohidratada Nutrex. Presentación de 300 g y 60 servicios.",
+    stock: 2,
+    available: true,
+    featured: false,
+    badge: "",
+    brand: "Nutrex",
+    tags: ["creatina", "monohidratada", "nutrex"],
+  },
+  {
+    id: "suplemento-004",
+    name: "Creatina Monohidratada Nutrex – 1000 g – 200 Servicios",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "creatinas",
+    subcategoryLabel: "Creatinas",
+    price: 54,
+    image: "/assets/products/suplements/creatina-monohidratada-nutrex-1000-g.png",
+    description: "Creatina monohidratada Nutrex. Presentación de 1000 g y 200 servicios.",
+    stock: 2,
+    available: true,
+    featured: false,
+    badge: "",
+    brand: "Nutrex",
+    tags: ["creatina", "monohidratada", "nutrex"],
+  },
+  {
+    id: "suplemento-005",
+    name: "Creatina Monohidratada Six Star – 300 g – 60 Servicios",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "creatinas",
+    subcategoryLabel: "Creatinas",
+    price: 25,
+    image: "/assets/products/suplements/creatina-monohidratada-six-star-300-g.png",
+    description: "Creatina monohidratada Six Star. Presentación de 300 g y 60 servicios.",
+    stock: 2,
+    available: true,
+    featured: false,
+    badge: "",
+    brand: "Six Star",
+    tags: ["creatina", "monohidratada", "six star"],
+  },
+  {
+    id: "suplemento-006",
+    name: "AllMax Classic AllWhey – 30 g de Proteína – 20 Servicios",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "proteinas",
+    subcategoryLabel: "Proteínas",
+    price: 50,
+    image: "/assets/products/suplements/proteina-allmax-classic-allwhey-chocolate.png",
+    description: "Proteína AllMax Classic AllWhey. 30 g de proteína por servicio. Presentación de 20 servicios.",
+    stock: 2,
+    available: true,
+    featured: false,
+    badge: "",
+    brand: "AllMax",
+    tags: ["proteina", "whey", "allmax"],
+  },
+  {
+    id: "suplemento-017",
+    name: "Whey Protein Nutrex – 2 lb",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "proteinas",
+    subcategoryLabel: "Proteínas",
+    price: 55,
+    image: "/assets/products/suplements/proteina-whey-nutrex-chocolate-2-lb.png",
+    description: "Proteína Whey Protein de Nutrex. Presentación de 2 lb.",
+    stock: 2,
+    available: true,
+    featured: false,
+    badge: "",
+    brand: "Nutrex",
+    tags: ["proteina", "whey", "nutrex"],
+  },
+  {
+    id: "suplemento-018",
+    name: "Whey Protein Nutrex – 5 lb",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "proteinas",
+    subcategoryLabel: "Proteínas",
+    price: 105,
+    image: "/assets/products/suplements/proteina-whey-nutrex-chocolate-5-lb.png",
+    description: "Proteína Whey Protein de Nutrex. Presentación de 5 lb.",
+    stock: 2,
+    available: true,
+    featured: false,
+    badge: "",
+    brand: "Nutrex",
+    tags: ["proteina", "whey", "nutrex"],
+  },
+  {
+    id: "suplemento-019",
+    name: "Whey Protein Six Star – 1.8 lb – 30 g de Proteína – 18 Servicios",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "proteinas",
+    subcategoryLabel: "Proteínas",
+    price: 40,
+    image: "/assets/products/suplements/proteina-whey-six-star-triple-chocolate-1-8-lb.png",
+    description: "Whey Protein Six Star. 30 g de proteína por servicio. Presentación de 1.8 lb y 18 servicios.",
+    stock: 2,
+    available: true,
+    featured: false,
+    badge: "",
+    brand: "Six Star",
+    tags: ["proteina", "whey", "six star"],
+  },
+  {
+    id: "suplemento-007",
+    name: "Centrum Men Multivitamínico para Hombres – 100 Tabletas",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "salud-bienestar",
+    subcategoryLabel: "Salud y Bienestar",
+    price: 18,
+    image: "/assets/products/suplements/multivitaminico-centrum-men-100-tabletas.png",
+    description: "Multivitamínico Centrum Men para hombres. Presentación de 100 tabletas.",
+    stock: 2,
+    available: true,
+    featured: false,
+    badge: "",
+    brand: "Centrum",
+    tags: ["multivitaminico", "centrum", "hombres"],
+  },
+  {
+    id: "suplemento-008",
+    name: "Centrum Men Multivitamínico para Hombres – 200 Tabletas",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "salud-bienestar",
+    subcategoryLabel: "Salud y Bienestar",
+    price: 36,
+    image: "/assets/products/suplements/multivitaminico-centrum-men-200-tabletas.png",
+    description: "Multivitamínico Centrum Men para hombres. Presentación de 200 tabletas.",
+    stock: 2,
+    available: true,
+    featured: false,
+    badge: "",
+    brand: "Centrum",
+    tags: ["multivitaminico", "centrum", "hombres"],
+  },
+  {
+    id: "suplemento-009",
+    name: "Centrum Women Multivitamínico para Mujeres – 100 Tabletas",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "salud-bienestar",
+    subcategoryLabel: "Salud y Bienestar",
+    price: 18,
+    image: "/assets/products/suplements/multivitaminico-centrum-women-100-tabletas.png",
+    description: "Multivitamínico Centrum Women para mujeres. Presentación de 100 tabletas.",
+    stock: 2,
+    available: true,
+    featured: false,
+    badge: "",
+    brand: "Centrum",
+    tags: ["multivitaminico", "centrum", "mujeres"],
+  },
+  {
+    id: "suplemento-010",
+    name: "Centrum Women Multivitamínico para Mujeres – 200 Tabletas",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "salud-bienestar",
+    subcategoryLabel: "Salud y Bienestar",
+    price: 32,
+    image: "/assets/products/suplements/multivitaminico-centrum-women-200-tabletas.png",
+    description: "Multivitamínico Centrum Women para mujeres. Presentación de 200 tabletas.",
+    stock: 2,
+    available: true,
+    featured: false,
+    badge: "",
+    brand: "Centrum",
+    tags: ["multivitaminico", "centrum", "mujeres"],
+  },
+  {
+    id: "suplemento-011",
+    name: "Colágeno ALLMAX Nutrition – 440 g – Biotina + Vitamina C – 44 Servicios",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "salud-bienestar",
+    subcategoryLabel: "Salud y Bienestar",
+    price: 35,
+    image: "/assets/products/suplements/colageno-allmax-440-g.png",
+    description: "Colágeno ALLMAX Nutrition con biotina y vitamina C. Presentación de 440 g y 44 servicios.",
+    stock: 2,
+    available: true,
+    featured: false,
+    badge: "",
+    brand: "ALLMAX Nutrition",
+    tags: ["colageno", "biotina", "vitamina c", "allmax"],
+  },
+  {
+    id: "suplemento-013",
+    name: "L-Carnitine 1000 Nutrex Research – 120 Cápsulas",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "otros-suplementos",
+    subcategoryLabel: "Otros suplementos",
+    price: 27,
+    image: "/assets/products/suplements/l-carnitina-nutrex-1000-120-capsulas.png",
+    description: "L-Carnitine 1000 de Nutrex Research. Presentación de 120 cápsulas.",
+    stock: 2,
+    available: true,
+    featured: false,
+    badge: "",
+    brand: "Nutrex Research",
+    tags: ["l-carnitine", "carnitina", "nutrex"],
+  },
+  {
+    id: "suplemento-014",
+    name: "Lipo-6 Black Ultra Concentrate Nutrex – 60 Cápsulas",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "otros-suplementos",
+    subcategoryLabel: "Otros suplementos",
+    price: 25,
+    image: "/assets/products/suplements/quemador-nutrex-lipo-6-black-ultra-60-capsulas.png",
+    description: "Lipo-6 Black Ultra Concentrate de Nutrex. Presentación de 60 cápsulas.",
+    stock: 2,
+    available: true,
+    featured: false,
+    badge: "",
+    brand: "Nutrex",
+    tags: ["lipo 6", "nutrex", "capsulas"],
+  },
+  {
+    id: "suplemento-015",
+    name: "NOW Foods Omega-3 Fish Oil – 1000 mg – 100 Cápsulas Blandas",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "salud-bienestar",
+    subcategoryLabel: "Salud y Bienestar",
+    price: 15,
+    image: "/assets/products/suplements/omega-3-now-foods-1000-mg-100-capsulas.png",
+    description: "NOW Foods Omega-3 Fish Oil de 1000 mg. Presentación de 100 cápsulas blandas.",
+    stock: 2,
+    available: true,
+    featured: false,
+    badge: "",
+    brand: "NOW Foods",
+    tags: ["omega 3", "fish oil", "now foods"],
+  },
+  {
+    id: "suplemento-016",
+    name: "NOW Foods Omega-3 Fish Oil – 1000 mg – 200 Cápsulas Blandas",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "salud-bienestar",
+    subcategoryLabel: "Salud y Bienestar",
+    price: 28,
+    image: "/assets/products/suplements/omega-3-now-foods-1000-mg-200-capsulas.png",
+    description: "NOW Foods Omega-3 Fish Oil de 1000 mg. Presentación de 200 cápsulas blandas.",
+    stock: 2,
+    available: true,
+    featured: false,
+    badge: "",
+    brand: "NOW Foods",
+    tags: ["omega 3", "fish oil", "now foods"],
+  },
+  {
+    id: "accesorio-pendiente-001",
+    name: "Bolso Deportivo Multifuncional",
+    category: "accesorios",
+    categoryLabel: "Accesorios",
+    subcategory: "equipamiento",
+    subcategoryLabel: "Equipamiento",
+    price: 30,
+    image: "/assets/products/accesories/bolso-deportivo-negro.png",
+    stock: 2,
+    available: true,
+    featured: false,
+  },
+  {
+    id: "accesorio-pendiente-002",
+    name: "Cinturón de Levantamiento de Pesas GRIEGOS",
+    category: "accesorios",
+    categoryLabel: "Accesorios",
+    subcategory: "equipamiento",
+    subcategoryLabel: "Equipamiento",
+    price: 30,
+    image: "/assets/products/accesories/cinturon-levantamiento-cuero-doble-hebilla-negro.png",
+    stock: 2,
+    available: true,
+    featured: false,
+  },
+  {
+    id: "accesorio-pendiente-003",
+    name: "Guantillas de Levantamiento Negras",
+    category: "accesorios",
+    categoryLabel: "Accesorios",
+    subcategory: "equipamiento",
+    subcategoryLabel: "Equipamiento",
+    price: 12,
+    image: "/assets/products/accesories/guantillas-munequera-corta-negras.png",
+    stock: 2,
+    available: true,
+    featured: false,
+  },
+  {
+    id: "accesorio-pendiente-004",
+    name: "Guantillas de Levantamiento Rosas",
+    category: "accesorios",
+    categoryLabel: "Accesorios",
+    subcategory: "equipamiento",
+    subcategoryLabel: "Equipamiento",
+    price: 12,
+    image: "/assets/products/accesories/guantillas-munequera-corta-rosas.png",
+    stock: 2,
+    available: true,
+    featured: false,
+  },
+  {
+    id: "accesorio-pendiente-005",
+    name: "Pomo de Agua SPORTS Azul – 1 Litro",
+    category: "accesorios",
+    categoryLabel: "Accesorios",
+    subcategory: "hidratacion",
+    subcategoryLabel: "Hidratación",
+    price: 14,
+    image: "/assets/products/accesories/pomo-agua-sports-azul-negro.png",
+    stock: 2,
+    available: true,
+    featured: false,
+  },
+  {
+    id: "accesorio-pendiente-006",
+    name: "Pomo de Agua SPORTS Negro – 1 Litro",
+    category: "accesorios",
+    categoryLabel: "Accesorios",
+    subcategory: "hidratacion",
+    subcategoryLabel: "Hidratación",
+    price: 14,
+    image: "/assets/products/accesories/pomo-agua-sports-negro.png",
+    stock: 2,
+    available: true,
+    featured: false,
+  },
+  {
+    id: "accesorio-pendiente-007",
+    name: "Pomo de Agua SPORTS Rojo – 1 Litro",
+    category: "accesorios",
+    categoryLabel: "Accesorios",
+    subcategory: "hidratacion",
+    subcategoryLabel: "Hidratación",
+    price: 14,
+    image: "/assets/products/accesories/pomo-agua-sports-rojo-negro.png",
+    stock: 2,
+    available: true,
+    featured: false,
+  },
+  {
+    id: "accesorio-pendiente-008",
+    name: "Termo de Agua de Acero Inoxidable Azul – 32 oz",
+    category: "accesorios",
+    categoryLabel: "Accesorios",
+    subcategory: "hidratacion",
+    subcategoryLabel: "Hidratación",
+    price: 25,
+    image: "/assets/products/accesories/termo-acero-inoxidable-azul.png",
+    stock: 2,
+    available: true,
+    featured: false,
+  },
+  {
+    id: "accesorio-pendiente-009",
+    name: "Termo de Agua de Acero Inoxidable Negro – 32 oz",
+    category: "accesorios",
+    categoryLabel: "Accesorios",
+    subcategory: "hidratacion",
+    subcategoryLabel: "Hidratación",
+    price: 25,
+    image: "/assets/products/accesories/termo-acero-inoxidable-negro.png",
+    stock: 2,
+    available: true,
+    featured: false,
+  },
+  {
+    id: "pendiente-amino-energy-optimum-nutrition-blue-raspberry",
+    name: "amino energy optimum nutrition blue raspberry",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "pre-intra-entrenos",
+    subcategoryLabel: "Pre-entrenos e Intra-entrenos",
+    price: 30,
+    image: "/assets/products/suplements/amino-energy-optimum-nutrition-blue-raspberry.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-amino-energy-optimum-nutrition-fruit-fusion",
+    name: "amino energy optimum nutrition fruit fusion",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "pre-intra-entrenos",
+    subcategoryLabel: "Pre-entrenos e Intra-entrenos",
+    price: 30,
+    image: "/assets/products/suplements/amino-energy-optimum-nutrition-fruit-fusion.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-bcaa-6000-nutrex-fruit-punch",
+    name: "bcaa 6000 nutrex fruit punch",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "pre-intra-entrenos",
+    subcategoryLabel: "Pre-entrenos e Intra-entrenos",
+    price: 25,
+    image: "/assets/products/suplements/bcaa-6000-nutrex-fruit-punch.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-bcaa-6000-nutrex-green-apple",
+    name: "bcaa 6000 nutrex green apple",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "pre-intra-entrenos",
+    subcategoryLabel: "Pre-entrenos e Intra-entrenos",
+    price: 25,
+    image: "/assets/products/suplements/bcaa-6000-nutrex-green-apple.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-creatina-muscletech-platinum-400-g",
+    name: "creatina muscletech platinum 400 g",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "creatinas",
+    subcategoryLabel: "Creatinas",
+    price: 40,
+    image: "/assets/products/suplements/creatina-muscletech-platinum-400-g.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-magnesio-citrato-now-foods-120-capsulas",
+    name: "magnesio citrato now foods 120 capsulas",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "salud-bienestar",
+    subcategoryLabel: "Salud y Bienestar",
+    price: 24,
+    image: "/assets/products/suplements/magnesio-citrato-now-foods-120-capsulas.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-magnesio-glicinato-now-foods-180-tabletas",
+    name: "magnesio glicinato now foods 180 tabletas",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "salud-bienestar",
+    subcategoryLabel: "Salud y Bienestar",
+    price: 30,
+    image: "/assets/products/suplements/magnesio-glicinato-now-foods-180-tabletas.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-magnesio-glicinato-now-foods-90-tabletas",
+    name: "magnesio glicinato now foods 90 tabletas",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "salud-bienestar",
+    subcategoryLabel: "Salud y Bienestar",
+    price: 18,
+    image: "/assets/products/suplements/magnesio-glicinato-now-foods-90-tabletas.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-nutrex-t-up-max-60-capsulas",
+    name: "nutrex t up max 60 capsulas",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "otros-suplementos",
+    subcategoryLabel: "Otros suplementos",
+    price: 25,
+    image: "/assets/products/suplements/nutrex-t-up-max-60-capsulas.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-pre-entreno-nutrex-outrage-blue-raspberry",
+    name: "pre entreno nutrex outrage blue raspberry",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "pre-intra-entrenos",
+    subcategoryLabel: "Pre-entrenos e Intra-entrenos",
+    price: 25,
+    image: "/assets/products/suplements/pre-entreno-nutrex-outrage-blue-raspberry.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-pre-entreno-nutrex-outrage-fruit-punch",
+    name: "pre entreno nutrex outrage fruit punch",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "pre-intra-entrenos",
+    subcategoryLabel: "Pre-entrenos e Intra-entrenos",
+    price: 25,
+    image: "/assets/products/suplements/pre-entreno-nutrex-outrage-fruit-punch.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-proteina-whey-gold-standard-optimum-nutrition-chocolate",
+    name: "proteina whey gold standard optimum nutrition chocolate",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "proteinas",
+    subcategoryLabel: "Proteínas",
+    price: 60,
+    image: "/assets/products/suplements/proteina-whey-gold-standard-optimum-nutrition-chocolate.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-vitamina-b12-now-foods-5000-mcg-60-pastillas",
+    name: "vitamina b12 now foods 5000 mcg 60 pastillas",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "salud-bienestar",
+    subcategoryLabel: "Salud y Bienestar",
+    price: 12,
+    image: "/assets/products/suplements/vitamina-b12-now-foods-5000-mcg-60-pastillas.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-vitamina-c-1000-now-foods-100-capsulas",
+    name: "vitamina c 1000 now foods 100 capsulas",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "salud-bienestar",
+    subcategoryLabel: "Salud y Bienestar",
+    price: 15,
+    image: "/assets/products/suplements/vitamina-c-1000-now-foods-100-capsulas.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-vitamina-d3-now-foods-5000-ui-120-capsulas",
+    name: "vitamina d3 now foods 5000 ui 120 capsulas",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "salud-bienestar",
+    subcategoryLabel: "Salud y Bienestar",
+    price: 12,
+    image: "/assets/products/suplements/vitamina-d3-now-foods-5000-ui-120-capsulas.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-vitaminas-d3-k2-now-foods-120-capsulas",
+    name: "vitaminas d3 k2 now foods 120 capsulas",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "salud-bienestar",
+    subcategoryLabel: "Salud y Bienestar",
+    price: 15,
+    image: "/assets/products/suplements/vitaminas-d3-k2-now-foods-120-capsulas.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-zinc-now-foods-50-mg-100-tabletas",
+    name: "zinc now foods 50 mg 100 tabletas",
+    category: "suplementos",
+    categoryLabel: "Suplementos",
+    subcategory: "salud-bienestar",
+    subcategoryLabel: "Salud y Bienestar",
+    price: 12,
+    image: "/assets/products/suplements/zinc-now-foods-50-mg-100-tabletas.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-almohadilla-barra-sentadillas-azul",
+    name: "almohadilla barra sentadillas azul",
+    category: "accesorios",
+    categoryLabel: "Accesorios",
+    subcategory: "equipamiento",
+    subcategoryLabel: "Equipamiento",
+    price: 15,
+    image: "/assets/products/accesories/almohadilla-barra-sentadillas-azul.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-almohadilla-barra-sentadillas-gris",
+    name: "almohadilla barra sentadillas gris",
+    category: "accesorios",
+    categoryLabel: "Accesorios",
+    subcategory: "equipamiento",
+    subcategoryLabel: "Equipamiento",
+    price: 15,
+    image: "/assets/products/accesories/almohadilla-barra-sentadillas-gris.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-almohadilla-barra-sentadillas-negra",
+    name: "almohadilla barra sentadillas negra",
+    category: "accesorios",
+    categoryLabel: "Accesorios",
+    subcategory: "equipamiento",
+    subcategoryLabel: "Equipamiento",
+    price: 15,
+    image: "/assets/products/accesories/almohadilla-barra-sentadillas-negra.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-almohadilla-barra-sentadillas-rosa",
+    name: "almohadilla barra sentadillas rosa",
+    category: "accesorios",
+    categoryLabel: "Accesorios",
+    subcategory: "equipamiento",
+    subcategoryLabel: "Equipamiento",
+    price: 15,
+    image: "/assets/products/accesories/almohadilla-barra-sentadillas-rosa.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-audifonos-cascos-negros",
+    name: "audifonos cascos negros",
+    category: "accesorios",
+    categoryLabel: "Accesorios",
+    subcategory: "tecnologia-deportiva",
+    subcategoryLabel: "Tecnología deportiva",
+    price: 25,
+    image: "/assets/products/accesories/audifonos-cascos-negros.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-cinturon-powerlifting-palanca-negro",
+    name: "cinturon powerlifting palanca negro",
+    category: "accesorios",
+    categoryLabel: "Accesorios",
+    subcategory: "equipamiento",
+    subcategoryLabel: "Equipamiento",
+    price: 60,
+    image: "/assets/products/accesories/cinturon-powerlifting-palanca-negro.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-faja-soporte-lumbar-negra",
+    name: "faja soporte lumbar negra",
+    category: "accesorios",
+    categoryLabel: "Accesorios",
+    subcategory: "seguridad-proteccion",
+    subcategoryLabel: "Seguridad y protección",
+    price: 18,
+    image: "/assets/products/accesories/faja-soporte-lumbar-negra.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-guantillas-munequera-larga-azul",
+    name: "guantillas munequera larga azul",
+    category: "accesorios",
+    categoryLabel: "Accesorios",
+    subcategory: "equipamiento",
+    subcategoryLabel: "Equipamiento",
+    price: 16,
+    image: "/assets/products/accesories/guantillas-munequera-larga-azul.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-guantillas-munequera-larga-negras",
+    name: "guantillas munequera larga negras",
+    category: "accesorios",
+    categoryLabel: "Accesorios",
+    subcategory: "equipamiento",
+    subcategoryLabel: "Equipamiento",
+    price: 16,
+    image: "/assets/products/accesories/guantillas-munequera-larga-negras.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-guantillas-munequera-larga-rosas",
+    name: "guantillas munequera larga rosas",
+    category: "accesorios",
+    categoryLabel: "Accesorios",
+    subcategory: "equipamiento",
+    subcategoryLabel: "Equipamiento",
+    price: 16,
+    image: "/assets/products/accesories/guantillas-munequera-larga-rosas.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-pistola-masajes-5-heads",
+    name: "pistola masajes 5 heads",
+    category: "accesorios",
+    categoryLabel: "Accesorios",
+    subcategory: "tecnologia-deportiva",
+    subcategoryLabel: "Tecnología deportiva",
+    price: 35,
+    image: "/assets/products/accesories/pistola-masajes-5%20heads.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-pomo-agua-2-litros",
+    name: "pomo agua 2 litros",
+    category: "accesorios",
+    categoryLabel: "Accesorios",
+    subcategory: "hidratacion",
+    subcategoryLabel: "Hidratación",
+    price: 16,
+    image: "/assets/products/accesories/pomo-agua-2%20litros.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-set-3-bandas-negro-rojo-amarillo",
+    name: "set 3 bandas negro rojo amarillo",
+    category: "accesorios",
+    categoryLabel: "Accesorios",
+    subcategory: "equipamiento",
+    subcategoryLabel: "Equipamiento",
+    price: 15,
+    image: "/assets/products/accesories/set-3%20bandas-negro-rojo-amarillo.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-straps-azul-navy",
+    name: "straps azul navy",
+    category: "accesorios",
+    categoryLabel: "Accesorios",
+    subcategory: "equipamiento",
+    subcategoryLabel: "Equipamiento",
+    price: 10,
+    image: "/assets/products/accesories/straps-azul-navy.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-straps-negros",
+    name: "straps negros",
+    category: "accesorios",
+    categoryLabel: "Accesorios",
+    subcategory: "equipamiento",
+    subcategoryLabel: "Equipamiento",
+    price: 10,
+    image: "/assets/products/accesories/straps-negros.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-straps-rosa",
+    name: "straps rosa",
+    category: "accesorios",
+    categoryLabel: "Accesorios",
+    subcategory: "equipamiento",
+    subcategoryLabel: "Equipamiento",
+    price: 10,
+    image: "/assets/products/accesories/straps-rosa.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-toalla-fitness-azul",
+    name: "toalla fitness azul",
+    category: "accesorios",
+    categoryLabel: "Accesorios",
+    subcategory: "equipamiento",
+    subcategoryLabel: "Equipamiento",
+    price: 8,
+    image: "/assets/products/accesories/toalla-fitness-azul.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-toalla-fitness-gris",
+    name: "toalla fitness gris",
+    category: "accesorios",
+    categoryLabel: "Accesorios",
+    subcategory: "equipamiento",
+    subcategoryLabel: "Equipamiento",
+    price: 8,
+    image: "/assets/products/accesories/toalla-fitness-gris.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-toalla-fitness-negra",
+    name: "toalla fitness negra",
+    category: "accesorios",
+    categoryLabel: "Accesorios",
+    subcategory: "equipamiento",
+    subcategoryLabel: "Equipamiento",
+    price: 8,
+    image: "/assets/products/accesories/toalla-fitness-negra.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+  {
+    id: "pendiente-toalla-fitness-rosa",
+    name: "toalla fitness rosa",
+    category: "accesorios",
+    categoryLabel: "Accesorios",
+    subcategory: "equipamiento",
+    subcategoryLabel: "Equipamiento",
+    price: 8,
+    image: "/assets/products/accesories/toalla-fitness-rosa.png",
+    stock: 2,
+    available: true,
+    featured: false,
+    classificationNote:
+      "Identificación por fotografía; denominación comercial y presentación por confirmar.",
+  },
+];
+
+const CART_KEY = "griegos_store_cart";
+let memoryCart = [];
+
+function json(data, status = 200, extra = {}) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      ...extra,
+    },
+  });
+}
+
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    const path = url.pathname;
+    const method = request.method;
+
+    const corsHeaders = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    };
+
+    if (method === "OPTIONS") {
+      return new Response(null, { status: 204, headers: corsHeaders });
+    }
+
+    if (path.startsWith("/api/")) {
+      return handleApi(request, url, method, env, corsHeaders);
+    }
+
+    return new Response(
+      "GRIEGOS Store Backend en línea. Rutas: /api/products, /api/cart, /api/order",
+      { status: 200, headers: { "Content-Type": "text/plain; charset=utf-8" } }
+    );
+  },
+};
+
+async function handleApi(request, url, method, env, corsHeaders) {
+  const segments = url.pathname.split("/").filter(Boolean);
+  const resource = segments[1];
+  const id = segments[2];
+  const headers = { ...corsHeaders };
+
+  try {
+    // PRODUCTOS
+    if (resource === "products") {
+      if (method === "GET") {
+        if (id) {
+          const product = PRODUCTS.find((p) => p.id === id);
+          if (!product) return json({ error: "Producto no encontrado" }, 404, headers);
+          return json(product, 200, headers);
+        }
+
+        let list = PRODUCTS;
+        const category = url.searchParams.get("category");
+        const onlyAvailable = url.searchParams.get("available");
+
+        if (category && category !== "all") {
+          list = list.filter((p) => p.category === category);
+        }
+        if (onlyAvailable === "true") {
+          list = list.filter((p) => p.available !== false);
+        }
+
+        return json(list, 200, headers);
+      }
+
+      return json({ error: "Método no permitido" }, 405, headers);
+    }
+
+    // CARRITO
+    if (resource === "cart") {
+      const KV = env && env.CART_KV ? env.CART_KV : null;
+      const useKV = !!KV;
+
+      if (method === "GET") {
+        let items = [];
+        if (useKV) {
+          try {
+            const raw = await KV.get(CART_KEY);
+            items = raw ? JSON.parse(raw) : [];
+          } catch (e) {
+            items = memoryCart;
+            return json(
+              { items, count: items.length, source: "memory", warning: "No se pudo leer KV, usando memoria temporal" },
+              200,
+              headers
+            );
+          }
+        } else {
+          items = memoryCart;
+        }
+        return json({ items, count: items.length, source: useKV ? "kv" : "memory" }, 200, headers);
+      }
+
+      if (method === "POST") {
+        let body = {};
+        try {
+          body = await request.json();
+        } catch (e) {
+          return json({ error: "JSON inválido" }, 400, headers);
+        }
+
+        const { items } = body || {};
+        if (!Array.isArray(items)) {
+          return json({ error: "Se espera un arreglo de ítems en 'items'" }, 400, headers);
+        }
+
+        memoryCart = items;
+        if (useKV) {
+          try {
+            await KV.put(CART_KEY, JSON.stringify(items));
+            return json({ ok: true, items, source: "kv" }, 200, headers);
+          } catch (e) {
+            return json(
+              { ok: true, items, source: "memory", warning: "No se pudo guardar en KV, usando memoria temporal" },
+              200,
+              headers
+            );
+          }
+        }
+
+        return json({ ok: true, items, source: "memory" }, 200, headers);
+      }
+
+      if (method === "DELETE") {
+        memoryCart = [];
+        if (useKV) {
+          try {
+            await KV.delete(CART_KEY);
+            return json({ ok: true, source: "kv" }, 200, headers);
+          } catch (e) {
+            return json({ ok: true, source: "memory", warning: "No se pudo borrar en KV" }, 200, headers);
+          }
+        }
+        return json({ ok: true, source: "memory" }, 200, headers);
+      }
+
+      return json({ error: "Método no permitido" }, 405, headers);
+    }
+
+    // PEDIDO
+    if (resource === "order") {
+      if (method === "POST") {
+        let body = {};
+        try {
+          body = await request.json();
+        } catch (e) {
+          return json({ error: "JSON inválido" }, 400, headers);
+        }
+
+        const {
+          customerName,
+          customerPhone,
+          customerMunicipality,
+          items,
+          deliveryMode,
+          paymentMethod,
+          notes,
+        } = body || {};
+
+        if (!customerName || !customerPhone || !Array.isArray(items) || items.length === 0) {
+          return json({ error: "Faltan datos requeridos del pedido" }, 400, headers);
+        }
+
+        const subtotal = items.reduce(
+          (sum, i) => sum + (Number(i.price) || 0) * (Number(i.quantity) || 1),
+          0
+        );
+
+        const productList = items
+          .map(
+            (i) =>
+              `- ${i.name || "Producto"} x${i.quantity || 1} ($${(Number(i.price) || 0).toFixed(2)})`
+          )
+          .join("\n");
+
+        const text = `
+*Nuevo pedido GRIEGOS*
+Cliente: ${customerName}
+Teléfono: ${customerPhone}
+Municipio: ${customerMunicipality || "—"}
+Entrega: ${deliveryMode || "—"}
+Pago: ${paymentMethod || "—"}
+Subtotal estimado: $${subtotal.toFixed(2)}
+Productos:
+${productList}
+Notas: ${notes || "—"}
+`.trim();
+
+        const whatsappUrl = "https://wa.me/+5353012721?text=" + encodeURIComponent(text);
+
+        return json(
+          {
+            ok: true,
+            subtotal,
+            whatsappUrl,
+            message:
+              "Pedido preparado. GRIEGOS revisará disponibilidad, costo de entrega y pago antes de confirmar.",
+          },
+          200,
+          headers
+        );
+      }
+
+      return json({ error: "Método no permitido" }, 405, headers);
+    }
+
+    return json({ error: "Ruta no encontrada" }, 404, headers);
+  } catch (err) {
+    return json({ error: "Error interno", detail: String(err && err.message ? err.message : err) }, 500, headers);
+  }
+}
