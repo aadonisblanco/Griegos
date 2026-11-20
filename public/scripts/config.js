@@ -7,6 +7,11 @@
 (() => {
   "use strict";
 
+  // Si ya hay configuración cargada desde JSON (por init-data.js), no sobreescribir
+  if (window.GRIEGOS_CONFIG && window.GRIEGOS_CONFIG.siteName) {
+    return;
+  }
+
   const GRIEGOS_CONFIG = {
 
     /* IDENTIDAD */
