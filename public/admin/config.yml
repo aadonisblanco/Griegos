@@ -2,6 +2,7 @@ backend:
   name: github
   repo: aadonisblanco/Griegos
   branch: main
+  site_url: https://griegos.pages.dev
   github_client_id: Ov23liqbNEBd8EMtooXu
 
 media_folder: "public/assets/uploads"
