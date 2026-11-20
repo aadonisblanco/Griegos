@@ -1,6 +1,6 @@
 [
   {
-    "id": "suplemento-001",
+    "id": "001",
     "name": "Creatina Micronizada Optimum Nutrition (ON) – 300 g – 60 Servicios",
     "category": "suplementos",
     "categoryLabel": "Suplementos",
@@ -9,12 +9,10 @@
     "price": 25,
     "image": "/assets/products/suplements/creatina-micronizada-optimum-nutrition-300-g.png",
     "description": "Creatina micronizada Optimum Nutrition. Presentación de 300 g y 60 servicios.",
-    "stock": 2,
-    "available": true,
-    "featured": false,
-    "badge": "",
+    "stock": 5,
     "brand": "Optimum Nutrition",
-    "tags": ["creatina", "monohidratada", "optimum nutrition", "on"]
+    "available": true,
+    "featured": false
   },
   {
     "id": "suplemento-002",
@@ -31,7 +29,12 @@
     "featured": false,
     "badge": "",
     "brand": "Optimum Nutrition",
-    "tags": ["creatina", "monohidratada", "optimum nutrition", "on"]
+    "tags": [
+      "creatina",
+      "monohidratada",
+      "optimum nutrition",
+      "on"
+    ]
   },
   {
     "id": "suplemento-003",
@@ -48,7 +51,11 @@
     "featured": false,
     "badge": "",
     "brand": "Nutrex",
-    "tags": ["creatina", "monohidratada", "nutrex"]
+    "tags": [
+      "creatina",
+      "monohidratada",
+      "nutrex"
+    ]
   },
   {
     "id": "suplemento-004",
@@ -65,7 +72,11 @@
     "featured": false,
     "badge": "",
     "brand": "Nutrex",
-    "tags": ["creatina", "monohidratada", "nutrex"]
+    "tags": [
+      "creatina",
+      "monohidratada",
+      "nutrex"
+    ]
   },
   {
     "id": "suplemento-005",
@@ -82,7 +93,11 @@
     "featured": false,
     "badge": "",
     "brand": "Six Star",
-    "tags": ["creatina", "monohidratada", "six star"]
+    "tags": [
+      "creatina",
+      "monohidratada",
+      "six star"
+    ]
   },
   {
     "id": "suplemento-006",
@@ -99,7 +114,11 @@
     "featured": false,
     "badge": "",
     "brand": "AllMax",
-    "tags": ["proteina", "whey", "allmax"]
+    "tags": [
+      "proteina",
+      "whey",
+      "allmax"
+    ]
   },
   {
     "id": "suplemento-017",
@@ -116,7 +135,11 @@
     "featured": false,
     "badge": "",
     "brand": "Nutrex",
-    "tags": ["proteina", "whey", "nutrex"]
+    "tags": [
+      "proteina",
+      "whey",
+      "nutrex"
+    ]
   },
   {
     "id": "suplemento-018",
@@ -133,7 +156,11 @@
     "featured": false,
     "badge": "",
     "brand": "Nutrex",
-    "tags": ["proteina", "whey", "nutrex"]
+    "tags": [
+      "proteina",
+      "whey",
+      "nutrex"
+    ]
   },
   {
     "id": "suplemento-019",
@@ -150,7 +177,11 @@
     "featured": false,
     "badge": "",
     "brand": "Six Star",
-    "tags": ["proteina", "whey", "six star"]
+    "tags": [
+      "proteina",
+      "whey",
+      "six star"
+    ]
   },
   {
     "id": "suplemento-007",
@@ -167,7 +198,11 @@
     "featured": false,
     "badge": "",
     "brand": "Centrum",
-    "tags": ["multivitaminico", "centrum", "hombres"]
+    "tags": [
+      "multivitaminico",
+      "centrum",
+      "hombres"
+    ]
   },
   {
     "id": "suplemento-008",
@@ -184,7 +219,11 @@
     "featured": false,
     "badge": "",
     "brand": "Centrum",
-    "tags": ["multivitaminico", "centrum", "hombres"]
+    "tags": [
+      "multivitaminico",
+      "centrum",
+      "hombres"
+    ]
   },
   {
     "id": "suplemento-009",
@@ -201,7 +240,11 @@
     "featured": false,
     "badge": "",
     "brand": "Centrum",
-    "tags": ["multivitaminico", "centrum", "mujeres"]
+    "tags": [
+      "multivitaminico",
+      "centrum",
+      "mujeres"
+    ]
   },
   {
     "id": "suplemento-010",
@@ -218,7 +261,11 @@
     "featured": false,
     "badge": "",
     "brand": "Centrum",
-    "tags": ["multivitaminico", "centrum", "mujeres"]
+    "tags": [
+      "multivitaminico",
+      "centrum",
+      "mujeres"
+    ]
   },
   {
     "id": "suplemento-011",
@@ -235,7 +282,12 @@
     "featured": false,
     "badge": "",
     "brand": "ALLMAX Nutrition",
-    "tags": ["colageno", "biotina", "vitamina c", "allmax"]
+    "tags": [
+      "colageno",
+      "biotina",
+      "vitamina c",
+      "allmax"
+    ]
   },
   {
     "id": "suplemento-013",
@@ -252,7 +304,11 @@
     "featured": false,
     "badge": "",
     "brand": "Nutrex Research",
-    "tags": ["l-carnitine", "carnitina", "nutrex"]
+    "tags": [
+      "l-carnitine",
+      "carnitina",
+      "nutrex"
+    ]
   },
   {
     "id": "suplemento-014",
@@ -269,7 +325,11 @@
     "featured": false,
     "badge": "",
     "brand": "Nutrex",
-    "tags": ["lipo 6", "nutrex", "capsulas"]
+    "tags": [
+      "lipo 6",
+      "nutrex",
+      "capsulas"
+    ]
   },
   {
     "id": "suplemento-015",
@@ -286,7 +346,11 @@
     "featured": false,
     "badge": "",
     "brand": "NOW Foods",
-    "tags": ["omega 3", "fish oil", "now foods"]
+    "tags": [
+      "omega 3",
+      "fish oil",
+      "now foods"
+    ]
   },
   {
     "id": "suplemento-016",
@@ -303,7 +367,11 @@
     "featured": false,
     "badge": "",
     "brand": "NOW Foods",
-    "tags": ["omega 3", "fish oil", "now foods"]
+    "tags": [
+      "omega 3",
+      "fish oil",
+      "now foods"
+    ]
   },
   {
     "id": "accesorio-pendiente-001",
