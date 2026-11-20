@@ -1,0 +1,14 @@
+{
+  "siteName": "GRIEGOS Fitness Shop",
+  "whatsappPhone": "5353012721",
+  "welcomeMessage": "Bienvenido a GRIEGOS. Suplementos y accesorios.",
+  "currency": {
+    "code": "USD",
+    "symbol": "$",
+    "locale": "en-US"
+  },
+  "messages": {
+    "general": "Hola, GRIEGOS. Necesito información.",
+    "order": "Hola, GRIEGOS. Me interesa realizar un pedido."
+  }
+}
