@@ -274,7 +274,7 @@
 
         headers: { "Content-Type": "application/json" },
 
-        body: JSON.stringify(state.items)
+        body: JSON.stringify({ items: state.items })
 
       });
 
