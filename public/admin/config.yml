@@ -4,6 +4,7 @@ backend:
   branch: main
   base_url: https://api.github.com
   auth_endpoint: https://api.github.com/user
+  github_client_id: Ov23liqbNEBd8EMtooXu
 
 media_folder: "public/assets/uploads"
 public_folder: "/assets/uploads"
