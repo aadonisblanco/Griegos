@@ -1,0 +1,48 @@
+backend:
+  name: github
+  repo: aadonisblanco/Griegos
+  branch: main
+  base_url: https://api.github.com
+  auth_endpoint: https://api.github.com/user
+
+media_folder: "public/assets/uploads"
+public_folder: "/assets/uploads"
+
+collections:
+  - name: "config"
+    label: "Configuración del sitio"
+    files:
+      - file: "public/data/config.json"
+        label: "Configuración general"
+        name: "config"
+        fields:
+          - {label: "Nombre del sitio", name: "siteName", widget: "string"}
+          - {label: "Teléfono WhatsApp", name: "whatsappPhone", widget: "string"}
+          - {label: "Mensaje de bienvenida", name: "welcomeMessage", widget: "text"}
+          - {label: "Código de moneda", name: "currency.code", widget: "string"}
+          - {label: "Símbolo de moneda", name: "currency.symbol", widget: "string"}
+
+  - name: "products"
+    label: "Catálogo de productos"
+    files:
+      - file: "public/data/products.json"
+        label: "Productos"
+        name: "products"
+        widget: "object"
+        fields:
+          - label: "Productos"
+            name: "productos"
+            widget: "list"
+            fields:
+              - {label: "ID", name: "id", widget: "string"}
+              - {label: "Nombre", name: "name", widget: "string"}
+              - {label: "Categoría", name: "category", widget: "string"}
+              - {label: "Etiqueta categoría", name: "categoryLabel", widget: "string"}
+              - {label: "Subcategoría", name: "subcategory", widget: "string"}
+              - {label: "Etiqueta subcategoría", name: "subcategoryLabel", widget: "string"}
+              - {label: "Precio (USD)", name: "price", widget: "number"}
+              - {label: "Imagen", name: "image", widget: "image"}
+              - {label: "Descripción", name: "description", widget: "text"}
+              - {label: "Stock", name: "stock", widget: "number"}
+              - {label: "¿Disponible?", name: "available", widget: "boolean"}
+              - {label: "Marca", name: "brand", widget: "string"}

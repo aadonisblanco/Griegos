@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Auth callback</title>
+  </head>
+  <body>
+    <script>
+      window.opener &&
+        window.opener.dispatchEvent(new Event("decap-cms-auth-callback"));
+      window.close();
+    </script>
+  </body>
+</html>
