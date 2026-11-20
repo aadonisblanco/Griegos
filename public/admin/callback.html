@@ -1,20 +1,13 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Auth callback</title>
+    <title>Callback</title>
   </head>
   <body>
     <script>
       if (window.opener) {
         window.opener.dispatchEvent(new Event("decap-cms-auth-callback"));
       }
-      setTimeout(() => {
-        try {
-          window.close();
-        } catch (e) {
-          /* Ignorar si el navegador no permite cerrar la ventana */
-        }
-      }, 500);
     </script>
   </body>
 </html>
