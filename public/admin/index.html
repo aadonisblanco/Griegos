@@ -1,11 +1,201 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin - GRIEGOS</title>
-  </head>
-  <body>
-    <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
-  </body>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Administración — GRIEGOS</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ==================== LOGIN ==================== -->
+  <div id="login-screen" class="screen">
+    <div class="login-card">
+      <div class="brand">
+        <img src="../assets/brand/griegos-firma-horizontal-blanco.png" alt="GRIEGOS" />
+        <div class="brand-title">Panel de Administración</div>
+      </div>
+
+      <div class="form-group">
+        <label for="admin-password">Contraseña de administrador</label>
+        <input type="password" id="admin-password" placeholder="Ingresa la contraseña" />
+      </div>
+
+      <div class="form-group">
+        <label for="github-token">Token de GitHub (Personal Access Token)</label>
+        <input type="password" id="github-token" placeholder="ghp_xxxxxxxxxxxx" />
+        <small class="help">Genera un token con scope <code>repo</code> en github.com/settings/tokens</small>
+      </div>
+
+      <button id="login-btn" class="btn btn-primary">Ingresar</button>
+      <div id="login-error" class="error-msg" style="display:none;"></div>
+    </div>
+  </div>
+
+  <!-- ==================== PANEL PRINCIPAL ==================== -->
+  <div id="admin-panel" class="screen" style="display:none;">
+    <header class="admin-header">
+      <div class="header-left">
+        <h1>GRIEGOS <span class="text-muted">Admin</span></h1>
+      </div>
+      <div class="header-right">
+        <span id="user-label" class="user-badge">Administrador</span>
+        <button id="logout-btn" class="btn btn-outline">Cerrar sesión</button>
+      </div>
+    </header>
+
+    <nav class="admin-nav">
+      <button class="nav-item active" data-section="config">⚙️ Configuración</button>
+      <button class="nav-item" data-section="products">📦 Productos</button>
+    </nav>
+
+    <div class="admin-content">
+      <!-- Mensajes -->
+      <div id="admin-message" class="message" style="display:none;"></div>
+
+      <!-- Sección: Configuración -->
+      <section id="section-config" class="section">
+        <h2>Configuración del sitio</h2>
+        <p class="sub">Edita los datos generales de la tienda. Los cambios se reflejan inmediatamente en la web.</p>
+
+        <form id="config-form" class="form-card">
+          <div class="grid grid-2">
+            <div class="form-group">
+              <label>Nombre del sitio</label>
+              <input type="text" name="siteName" placeholder="GRIEGOS Fitness Shop" />
+            </div>
+            <div class="form-group">
+              <label>Teléfono WhatsApp</label>
+              <input type="tel" name="whatsappPhone" placeholder="5353012721" />
+            </div>
+            <div class="form-group">
+              <label>Mensaje de bienvenida</label>
+              <input type="text" name="welcomeMessage" placeholder="Bienvenido a GRIEGOS..." />
+            </div>
+            <div class="form-group">
+              <label>Código de moneda</label>
+              <input type="text" name="currencyCode" placeholder="USD" />
+            </div>
+            <div class="form-group">
+              <label>Símbolo de moneda</label>
+              <input type="text" name="currencySymbol" placeholder="$" />
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">Guardar configuración</button>
+        </form>
+      </section>
+
+      <!-- Sección: Productos -->
+      <section id="section-products" class="section" style="display:none;">
+        <div class="section-header">
+          <h2>Catálogo de productos</h2>
+          <button id="add-product-btn" class="btn btn-primary">+ Agregar producto</button>
+        </div>
+        <p class="sub">Gestiona nombres, precios, stock y disponibilidad. Los cambios se reflejan en la tienda.</p>
+
+        <div class="table-wrapper">
+          <table id="products-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Categoría</th>
+                <th>Precio (USD)</th>
+                <th>Stock</th>
+                <th>Disponible</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="products-table-body">
+              <!-- filas generadas por JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div id="products-empty" class="empty-state" style="display:none;">
+          <p>No hay productos registrados.</p>
+        </div>
+      </section>
+
+      <!-- Formulario: Editar / Agregar producto (oculto por defecto) -->
+      <section id="section-product-form" class="section" style="display:none;">
+        <div class="section-header">
+          <h2 id="product-form-title">Editar producto</h2>
+          <button id="back-to-products" class="btn btn-outline">← Volver al catálogo</button>
+        </div>
+
+        <form id="product-form" class="form-card">
+          <input type="hidden" name="id" />
+          <input type="hidden" name="_originalId" />
+
+          <div class="form-group">
+            <label>ID del producto <small>(único, no cambiar si ya tiene ventas)</small></label>
+            <input type="text" name="id" required placeholder="suplemento-001" />
+          </div>
+
+          <div class="grid grid-2">
+            <div class="form-group">
+              <label>Nombre *</label>
+              <input type="text" name="name" required placeholder="Creatina Monohidratada..." />
+            </div>
+            <div class="form-group">
+              <label>Categoría</label>
+              <input type="text" name="category" placeholder="suplementos" />
+            </div>
+            <div class="form-group">
+              <label>Etiqueta categoría</label>
+              <input type="text" name="categoryLabel" placeholder="Suplementos" />
+            </div>
+            <div class="form-group">
+              <label>Subcategoría</label>
+              <input type="text" name="subcategory" placeholder="creatinas" />
+            </div>
+            <div class="form-group">
+              <label>Etiqueta subcategoría</label>
+              <input type="text" name="subcategoryLabel" placeholder="Creatinas" />
+            </div>
+            <div class="form-group">
+              <label>Precio (USD) *</label>
+              <input type="number" name="price" step="0.01" required min="0" placeholder="25.00" />
+            </div>
+            <div class="form-group">
+              <label>Imagen (ruta)</label>
+              <input type="text" name="image" placeholder="/assets/products/suplements/imagen.png" />
+            </div>
+            <div class="form-group">
+              <label>Descripción</label>
+              <textarea name="description" rows="3" placeholder="Descripción del producto..."></textarea>
+            </div>
+            <div class="form-group">
+              <label>Stock</label>
+              <input type="number" name="stock" step="1" min="0" placeholder="2" />
+            </div>
+            <div class="form-group">
+              <label>Marca</label>
+              <input type="text" name="brand" placeholder="Optimum Nutrition" />
+            </div>
+            <div class="form-group form-checkbox">
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" name="available" />
+                <span>¿Disponible para la venta?</span>
+              </label>
+            </div>
+            <div class="form-group form-checkbox">
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" name="featured" />
+                <span>¿Producto destacado?</span>
+              </label>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" id="delete-product-btn" class="btn btn-danger btn-outline" style="display:none;">Eliminar producto</button>
+              <button type="submit" class="btn btn-primary btn-full">Guardar producto</button>
+            </div>
+          </div>
+        </form>
+      </section>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
 </html>
