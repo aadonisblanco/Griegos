@@ -1,28 +1,61 @@
 /* =========================================================
-   GRIEGOS STORE — CARGA SÍNCRONA DE DATOS DESDE JSON
+   GRIEGOS STORE — CARGA DE DATOS (JSON con fallback a API)
    Archivo: scripts/init-data.js
    ========================================================= */
 
-(function() {
+(() => {
   "use strict";
 
-  function syncFetch(url) {
-    const xhr = new XMLHttpRequest();
-    xhr.open("GET", url, false); // false = síncrono, bloquea hasta terminar
-    xhr.send();
-    if (xhr.status !== 200) {
-      throw new Error("Error al cargar " + url + " (status " + xhr.status + ")");
-    }
-    return xhr.responseText;
+  const API_BASE = "https://oficial.griegos.workers.dev/api";
+
+  async function fetchJSON(url) {
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status} al cargar ${url}`);
+    return await res.json();
   }
 
-  try {
-    window.GRIEGOS_CONFIG = JSON.parse(syncFetch("../data/config.json"));
-    window.GRIEGOS_PRODUCTS = JSON.parse(syncFetch("../data/products.json"));
-    console.log("GRIEGOS STORE: datos cargados desde JSON.");
-  } catch (e) {
-    console.error("GRIEGOS STORE: error cargando datos JSON:", e);
-    window.GRIEGOS_CONFIG = window.GRIEGOS_CONFIG || {};
-    window.GRIEGOS_PRODUCTS = window.GRIEGOS_PRODUCTS || [];
+  async function boot() {
+    try {
+      /* 1. Intentar cargar desde los archivos JSON de Pages */
+      const [config, products] = await Promise.all([
+        fetchJSON("../data/config.json"),
+        fetchJSON("../data/products.json")
+      ]);
+
+      window.GRIEGOS_CONFIG = config;
+      window.GRIEGOS_PRODUCTS = Array.isArray(products) ? products : [];
+
+      console.log("GRIEGOS STORE: datos cargados desde JSON local.");
+    } catch (e) {
+      console.warn("GRIEGOS STORE: no se pudo leer JSON local, usando API del Worker:", e.message);
+
+      /* 2. Fallback: cargar productos desde la API del Worker (ya confirmada que funciona) */
+      try {
+        const products = await fetchJSON(`${API_BASE}/products`);
+        window.GRIEGOS_PRODUCTS = Array.isArray(products) ? products : [];
+        window.GRIEGOS_CONFIG = window.GRIEGOS_CONFIG || {
+          siteName: "GRIEGOS Fitness Shop",
+          whatsappPhone: "5353012721",
+          welcomeMessage: "Bienvenido a GRIEGOS.",
+          currency: { code: "USD", symbol: "$", locale: "en-US" },
+          messages: { general: "Hola, GRIEGOS.", order: "Hola, GRIEGOS." }
+        };
+        console.log("GRIEGOS STORE: productos cargados desde API del Worker.");
+      } catch (e2) {
+        console.error("GRIEGOS STORE: no se pudieron cargar productos:", e2.message);
+        window.GRIEGOS_PRODUCTS = [];
+        window.GRIEGOS_CONFIG = window.GRIEGOS_CONFIG || {};
+      }
+    }
+
+    /* 3. Disparar evento para que el resto de la app sepa que los datos están listos */
+    window.dispatchEvent(new CustomEvent("griegos:data-ready", {
+      detail: {
+        config: window.GRIEGOS_CONFIG,
+        products: window.GRIEGOS_PRODUCTS
+      }
+    }));
   }
+
+  boot();
 })();

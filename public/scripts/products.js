@@ -763,6 +763,16 @@
 
     state.initialized = true;
 
+    /* Si los datos aún no llegaron, esperar al evento */
+    if (!window.GRIEGOS_PRODUCTS || window.GRIEGOS_PRODUCTS.length === 0) {
+      window.addEventListener("griegos:data-ready", () => {
+        state.products = getProductData();
+        bindEvents();
+        applyURL();
+      }, { once: true });
+      return;
+    }
+
     state.products = getProductData();
 
     bindEvents();
