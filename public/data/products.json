@@ -15,26 +15,19 @@
     "featured": false
   },
   {
-    "id": "suplemento-002",
+    "id": "002",
     "name": "Creatina Micronizada Optimum Nutrition (ON) – 600 g – 120 Servicios",
     "category": "suplementos",
     "categoryLabel": "Suplementos",
     "subcategory": "creatinas",
     "subcategoryLabel": "Creatinas",
-    "price": 45,
+    "price": 4500,
     "image": "/assets/products/suplements/creatina-micronizada-optimum-nutrition-600-g.png",
     "description": "Creatina micronizada Optimum Nutrition. Presentación de 600 g y 120 servicios.",
     "stock": 2,
-    "available": true,
-    "featured": false,
-    "badge": "",
     "brand": "Optimum Nutrition",
-    "tags": [
-      "creatina",
-      "monohidratada",
-      "optimum nutrition",
-      "on"
-    ]
+    "available": true,
+    "featured": false
   },
   {
     "id": "suplemento-003",
