@@ -6,10 +6,10 @@
     "categoryLabel": "Suplementos",
     "subcategory": "creatinas",
     "subcategoryLabel": "Creatinas",
-    "price": 25,
+    "price": 2500,
     "image": "/assets/products/suplements/creatina-micronizada-optimum-nutrition-300-g.png",
     "description": "Creatina micronizada Optimum Nutrition. Presentación de 300 g y 60 servicios.",
-    "stock": 5,
+    "stock": 2,
     "brand": "Optimum Nutrition",
     "available": true,
     "featured": false
