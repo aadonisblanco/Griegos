@@ -10,11 +10,17 @@
   const REPO_NAME = "Griegos";
   const BRANCH = "main";
 
-  // Rutas de los archivos en el repositorio
+  // Rutas de los archivos en el repositorio (para escritura vía GitHub API)
   const PATH_CONFIG = "public/data/config.json";
   const PATH_PRODUCTS = "public/data/products.json";
 
-  // Contraseña de acceso al panel (cámbiala si lo deseas)
+  // API del Worker (más confiable, ya probada en todos lados)
+  const API_BASE = "https://oficial.griegos.workers.dev/api";
+
+  // URL base de Pages (lectura directa como respaldo)
+  const PAGES_BASE = "https://griegos.pages.dev";
+
+  // Contraseña de acceso al panel
   const ADMIN_PASSWORD = "griegos2026";
 
   /* -------------------- ESTADO -------------------- */
@@ -74,7 +80,6 @@
   function setLoading(loading) {
     state.isLoading = loading;
     els.loginBtn.disabled = loading;
-    // deshabilitar botones del panel si es necesario
   }
 
   function toBase64(str) {
@@ -85,8 +90,104 @@
     return decodeURIComponent(escape(atob(b64)));
   }
 
-  /* -------------------- GITHUB API -------------------- */
+  /* -------------------- LECTURA DE PRODUCTOS (múltiples fuentes) -------------------- */
+  async function loadProducts() {
+    let products = null;
+    let source = "";
+
+    /* Intento 1: API del Worker (más confiable, ya probada) */
+    try {
+      const res = await fetch(`${API_BASE}/products?available=true`, { cache: "no-store" });
+      if (res.ok) {
+        products = await res.json();
+        source = "API del Worker";
+      }
+    } catch (e) {
+      console.warn("Worker API falló:", e.message);
+    }
+
+    /* Intento 2: Pages directamente */
+    if (!products || !Array.isArray(products) || products.length === 0) {
+      try {
+        const res = await fetch(`${PAGES_BASE}/data/products.json`, { cache: "no-store" });
+        if (res.ok) {
+          products = await res.json();
+          source = "Pages directo";
+        }
+      } catch (e) {
+        console.warn("Pages directo falló:", e.message);
+      }
+    }
+
+    /* Intento 3: GitHub API (requiere token) */
+    if (!products || !Array.isArray(products) || products.length === 0) {
+      if (state.githubToken) {
+        try {
+          const { content } = await githubGetFile(PATH_PRODUCTS);
+          products = JSON.parse(content);
+          source = "GitHub API";
+        } catch (e) {
+          console.warn("GitHub API falló:", e.message);
+        }
+      }
+    }
+
+    if (products && Array.isArray(products) && products.length > 0) {
+      state.products = products;
+      renderProductsTable();
+      setMessage(`Productos cargados desde ${source} (${products.length} ítems).`);
+    } else {
+      els.productsEmpty.style.display = "block";
+      setMessage("No se pudieron cargar los productos. Revisa tu conexión o el token de GitHub.", "error");
+    }
+  }
+
+  /* -------------------- LECTURA DE CONFIG -------------------- */
+  async function loadConfig() {
+    let config = null;
+    let source = "";
+
+    try {
+      const res = await fetch(`${PAGES_BASE}/data/config.json`, { cache: "no-store" });
+      if (res.ok) {
+        config = await res.json();
+        source = "Pages directo";
+      }
+    } catch (e) {
+      console.warn("Pages config falló:", e.message);
+    }
+
+    if (!config && state.githubToken) {
+      try {
+        const { content } = await githubGetFile(PATH_CONFIG);
+        config = JSON.parse(content);
+        source = "GitHub API";
+      } catch (e) {
+        console.warn("GitHub config falló:", e.message);
+      }
+    }
+
+    if (config) {
+      state.config = config;
+      renderConfigForm();
+      setMessage(`Configuración cargada desde ${source}.`);
+    } else {
+      // Config por defecto para que no se rompa el formulario
+      state.config = {
+        siteName: "GRIEGOS Fitness Shop",
+        whatsappPhone: "5353012721",
+        welcomeMessage: "Bienvenido a GRIEGOS.",
+        currency: { code: "USD", symbol: "$", locale: "en-US" },
+        messages: { general: "Hola, GRIEGOS.", order: "Hola, GRIEGOS." }
+      };
+      renderConfigForm();
+      setMessage("Usando configuración por defecto. Ingresa token de GitHub para cargar la real.", "error");
+    }
+  }
+
+  /* -------------------- GITHUB API (solo para escritura) -------------------- */
   async function githubGetFile(path) {
+    if (!state.githubToken) throw new Error("Token de GitHub no configurado");
     const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}?ref=${BRANCH}`;
     const res = await fetch(url, {
       headers: {
@@ -129,22 +230,16 @@
     return await res.json();
   }
 
-  /* -------------------- CARGA Y GUARDADO -------------------- */
-  async function loadConfig() {
-    try {
-      const { content } = await githubGetFile(PATH_CONFIG);
-      state.config = JSON.parse(content);
-      renderConfigForm();
-    } catch (e) {
-      setMessage(`Error al cargar configuración: ${e.message}`, "error");
-    }
-  }
-
+  /* -------------------- GUARDAR -------------------- */
   async function saveConfig() {
+    if (!state.githubToken) {
+      setMessage("Necesitas ingresar tu Token de GitHub para guardar cambios.", "error");
+      return;
+    }
+
     const formData = new FormData(els.configForm);
     const raw = Object.fromEntries(formData.entries());
 
-    // Normalizar tipos
     const config = {
       siteName: raw.siteName || "",
       whatsappPhone: raw.whatsappPhone || "",
@@ -175,17 +270,12 @@
     }
   }
 
-  async function loadProducts() {
-    try {
-      const { content } = await githubGetFile(PATH_PRODUCTS);
-      state.products = JSON.parse(content);
-      renderProductsTable();
-    } catch (e) {
-      setMessage(`Error al cargar productos: ${e.message}`, "error");
-    }
-  }
-
   async function saveProducts() {
+    if (!state.githubToken) {
+      setMessage("Necesitas ingresar tu Token de GitHub para guardar cambios.", "error");
+      return;
+    }
+
     try {
       setLoading(true);
       const current = await githubGetFile(PATH_PRODUCTS);
@@ -348,7 +438,7 @@
           el.style.display = key === section ? "block" : "none";
         });
 
-        if (section === "products") renderProductsTable();
+        if (section === "products") loadProducts();
         if (section === "config") loadConfig();
       });
     });
@@ -388,15 +478,12 @@
         featured: raw.featured === "on"
       };
 
-      // Validar campos requeridos
       if (!product.id || !product.name || product.price === null) {
         setMessage("ID, nombre y precio son obligatorios.", "error");
         return;
       }
 
-      // Si es nuevo, agregar; si existe, actualizar
       if (state.editingProductId && state.editingProductId !== product.id) {
-        // Cambiar ID: buscar y reemplazar
         const idx = state.products.findIndex(p => p.id === state.editingProductId);
         if (idx >= 0) {
           state.products[idx] = product;
@@ -407,7 +494,6 @@
           state.products[idx] = product;
         }
       } else {
-        // Nuevo producto: verificar ID duplicado
         if (state.products.find(p => p.id === product.id)) {
           setMessage("Ya existe un producto con ese ID.", "error");
           return;
@@ -437,7 +523,6 @@
 
   /* -------------------- INICIALIZAR -------------------- */
   function init() {
-    // Mostrar login por defecto
     showScreen("login-screen");
     initEvents();
   }
