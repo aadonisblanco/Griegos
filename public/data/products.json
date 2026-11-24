@@ -30,25 +30,19 @@
     "featured": false
   },
   {
-    "id": "suplemento-003",
+    "id": "003",
     "name": "Creatina Monohidratada Nutrex – 300 g – 60 Servicios",
     "category": "suplementos",
     "categoryLabel": "Suplementos",
     "subcategory": "creatinas",
     "subcategoryLabel": "Creatinas",
-    "price": 25,
+    "price": 250000,
     "image": "/assets/products/suplements/creatina-monohidratada-nutrex-300-g.png",
     "description": "Creatina monohidratada Nutrex. Presentación de 300 g y 60 servicios.",
     "stock": 2,
-    "available": true,
-    "featured": false,
-    "badge": "",
     "brand": "Nutrex",
-    "tags": [
-      "creatina",
-      "monohidratada",
-      "nutrex"
-    ]
+    "available": true,
+    "featured": false
   },
   {
     "id": "suplemento-004",
