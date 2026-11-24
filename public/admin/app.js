@@ -65,8 +65,13 @@
 
   /* -------------------- UTILIDADES -------------------- */
   function showScreen(screenId) {
-    document.querySelectorAll(".screen").forEach(s => s.style.display = "none");
-    document.getElementById(screenId).style.display = "flex";
+    document.querySelectorAll(".screen").forEach(s => {
+      s.style.display = "none";
+    });
+    const el = document.getElementById(screenId);
+    if (!el) return;
+    // admin-panel usa grid en desktop; login usa flex
+    el.style.display = screenId === "admin-panel" ? "grid" : "flex";
   }
 
   function setMessage(text, type = "success") {
@@ -398,8 +403,9 @@
   function closeProductEditor() {
     state.editingProductId = null;
     els.sections.productForm.style.display = "none";
-    els.sections.config.style.display = "block";
+    els.sections.config.style.display = "none";
     els.sections.products.style.display = "block";
+    els.navItems.forEach(i => i.classList.toggle("active", i.dataset.section === "products"));
     renderProductsTable();
   }
 

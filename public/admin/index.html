@@ -3,196 +3,261 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b0d10" />
   <title>Administración — GRIEGOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <!-- ==================== LOGIN ==================== -->
-  <div id="login-screen" class="screen">
-    <div class="login-card">
-      <div class="brand">
-        <img src="../assets/brand/griegos-firma-horizontal-blanco.png" alt="GRIEGOS" />
-        <div class="brand-title">Panel de Administración</div>
-      </div>
+  <div id="login-screen" class="screen screen-login">
+    <div class="login-shell">
+      <div class="login-card">
+        <div class="brand">
+          <div class="brand-mark">G</div>
+          <div class="brand-copy">
+            <div class="brand-title">GRIEGOS</div>
+            <div class="brand-subtitle">Panel de administración</div>
+          </div>
+        </div>
 
-      <div class="form-group">
-        <label for="admin-password">Contraseña de administrador</label>
-        <input type="password" id="admin-password" placeholder="Ingresa la contraseña" />
-      </div>
+        <p class="login-lead">Accede para editar la configuración y el catálogo de la tienda.</p>
 
-      <div class="form-group">
-        <label for="github-token">Token de GitHub (Personal Access Token)</label>
-        <input type="password" id="github-token" placeholder="ghp_xxxxxxxxxxxx" />
-        <small class="help">Genera un token con scope <code>repo</code> en github.com/settings/tokens</small>
-      </div>
+        <div class="form-group">
+          <label for="admin-password">Contraseña de administrador</label>
+          <input type="password" id="admin-password" placeholder="Ingresa la contraseña" autocomplete="current-password" />
+        </div>
 
-      <button id="login-btn" class="btn btn-primary">Ingresar</button>
-      <div id="login-error" class="error-msg" style="display:none;"></div>
+        <div class="form-group">
+          <label for="github-token">Token de GitHub</label>
+          <input type="password" id="github-token" placeholder="ghp_xxxxxxxxxxxx" autocomplete="off" />
+          <small class="help">Usa un token <strong>classic</strong> con scope <code>repo</code>. Se necesita para guardar cambios.</small>
+        </div>
+
+        <button id="login-btn" class="btn btn-primary btn-full">Ingresar al panel</button>
+        <div id="login-error" class="error-msg" style="display:none;"></div>
+      </div>
+      <div class="login-foot">GRIEGOS Fitness Shop · Administración segura por GitHub</div>
     </div>
   </div>
 
   <!-- ==================== PANEL PRINCIPAL ==================== -->
-  <div id="admin-panel" class="screen" style="display:none;">
-    <header class="admin-header">
-      <div class="header-left">
-        <h1>GRIEGOS <span class="text-muted">Admin</span></h1>
+  <div id="admin-panel" class="screen screen-admin" style="display:none;">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-mark small">G</div>
+        <div>
+          <div class="sidebar-title">GRIEGOS</div>
+          <div class="sidebar-sub">Admin</div>
+        </div>
       </div>
-      <div class="header-right">
-        <span id="user-label" class="user-badge">Administrador</span>
-        <button id="logout-btn" class="btn btn-outline">Cerrar sesión</button>
+
+      <nav class="admin-nav" aria-label="Secciones">
+        <button class="nav-item active" data-section="config">
+          <span class="nav-icon">⚙</span>
+          <span>Configuración</span>
+        </button>
+        <button class="nav-item" data-section="products">
+          <span class="nav-icon">▣</span>
+          <span>Productos</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-foot">
+        <div class="sidebar-note">Los cambios se guardan en GitHub y se publican en Pages.</div>
       </div>
-    </header>
+    </aside>
 
-    <nav class="admin-nav">
-      <button class="nav-item active" data-section="config">⚙️ Configuración</button>
-      <button class="nav-item" data-section="products">📦 Productos</button>
-    </nav>
+    <div class="admin-main">
+      <header class="admin-header">
+        <div class="header-left">
+          <p class="eyebrow">Panel de control</p>
+          <h1>Administración de tienda</h1>
+        </div>
+        <div class="header-right">
+          <span id="user-label" class="user-badge">Administrador</span>
+          <button id="logout-btn" class="btn btn-ghost">Cerrar sesión</button>
+        </div>
+      </header>
 
-    <div class="admin-content">
-      <!-- Mensajes -->
-      <div id="admin-message" class="message" style="display:none;"></div>
+      <div class="admin-content">
+        <div id="admin-message" class="message" style="display:none;"></div>
 
-      <!-- Sección: Configuración -->
-      <section id="section-config" class="section">
-        <h2>Configuración del sitio</h2>
-        <p class="sub">Edita los datos generales de la tienda. Los cambios se reflejan inmediatamente en la web.</p>
-
-        <form id="config-form" class="form-card">
-          <div class="grid grid-2">
-            <div class="form-group">
-              <label>Nombre del sitio</label>
-              <input type="text" name="siteName" placeholder="GRIEGOS Fitness Shop" />
-            </div>
-            <div class="form-group">
-              <label>Teléfono WhatsApp</label>
-              <input type="tel" name="whatsappPhone" placeholder="5353012721" />
-            </div>
-            <div class="form-group">
-              <label>Mensaje de bienvenida</label>
-              <input type="text" name="welcomeMessage" placeholder="Bienvenido a GRIEGOS..." />
-            </div>
-            <div class="form-group">
-              <label>Código de moneda</label>
-              <input type="text" name="currencyCode" placeholder="USD" />
-            </div>
-            <div class="form-group">
-              <label>Símbolo de moneda</label>
-              <input type="text" name="currencySymbol" placeholder="$" />
+        <!-- Sección: Configuración -->
+        <section id="section-config" class="section">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">General</p>
+              <h2>Configuración del sitio</h2>
+              <p class="sub">Edita los datos principales que usa la tienda.</p>
             </div>
           </div>
-          <button type="submit" class="btn btn-primary btn-full">Guardar configuración</button>
-        </form>
-      </section>
 
-      <!-- Sección: Productos -->
-      <section id="section-products" class="section" style="display:none;">
-        <div class="section-header">
-          <h2>Catálogo de productos</h2>
-          <button id="add-product-btn" class="btn btn-primary">+ Agregar producto</button>
-        </div>
-        <p class="sub">Gestiona nombres, precios, stock y disponibilidad. Los cambios se reflejan en la tienda.</p>
+          <form id="config-form" class="form-card">
+            <div class="grid grid-2">
+              <div class="form-group">
+                <label>Nombre del sitio</label>
+                <input type="text" name="siteName" placeholder="GRIEGOS Fitness Shop" />
+              </div>
+              <div class="form-group">
+                <label>Teléfono WhatsApp</label>
+                <input type="tel" name="whatsappPhone" placeholder="5353012721" />
+              </div>
+              <div class="form-group span-2">
+                <label>Mensaje de bienvenida</label>
+                <input type="text" name="welcomeMessage" placeholder="Bienvenido a GRIEGOS..." />
+              </div>
+              <div class="form-group">
+                <label>Código de moneda</label>
+                <input type="text" name="currencyCode" placeholder="USD" />
+              </div>
+              <div class="form-group">
+                <label>Símbolo de moneda</label>
+                <input type="text" name="currencySymbol" placeholder="$" />
+              </div>
+            </div>
+            <div class="form-actions end">
+              <button type="submit" class="btn btn-primary">Guardar configuración</button>
+            </div>
+          </form>
+        </section>
 
-        <div class="table-wrapper">
-          <table id="products-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Categoría</th>
-                <th>Precio (USD)</th>
-                <th>Stock</th>
-                <th>Disponible</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="products-table-body">
-              <!-- filas generadas por JS -->
-            </tbody>
-          </table>
-        </div>
-
-        <div id="products-empty" class="empty-state" style="display:none;">
-          <p>No hay productos registrados.</p>
-        </div>
-      </section>
-
-      <!-- Formulario: Editar / Agregar producto (oculto por defecto) -->
-      <section id="section-product-form" class="section" style="display:none;">
-        <div class="section-header">
-          <h2 id="product-form-title">Editar producto</h2>
-          <button id="back-to-products" class="btn btn-outline">← Volver al catálogo</button>
-        </div>
-
-        <form id="product-form" class="form-card">
-          <input type="hidden" name="id" />
-          <input type="hidden" name="_originalId" />
-
-          <div class="form-group">
-            <label>ID del producto <small>(único, no cambiar si ya tiene ventas)</small></label>
-            <input type="text" name="id" required placeholder="suplemento-001" />
+        <!-- Sección: Productos -->
+        <section id="section-products" class="section" style="display:none;">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Catálogo</p>
+              <h2>Productos</h2>
+              <p class="sub">Gestiona el catálogo publicado en la tienda.</p>
+            </div>
+            <button id="add-product-btn" class="btn btn-primary">+ Agregar producto</button>
           </div>
 
-          <div class="grid grid-2">
-            <div class="form-group">
-              <label>Nombre *</label>
-              <input type="text" name="name" required placeholder="Creatina Monohidratada..." />
+          <div class="table-card">
+            <div class="table-wrapper">
+              <table id="products-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Categoría</th>
+                    <th>Precio</th>
+                    <th>Stock</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="products-table-body">
+                  <!-- filas generadas por JS -->
+                </tbody>
+              </table>
             </div>
-            <div class="form-group">
-              <label>Categoría</label>
-              <input type="text" name="category" placeholder="suplementos" />
+            <div id="products-empty" class="empty-state" style="display:none;">
+              <div class="empty-icon">▣</div>
+              <p>No hay productos para mostrar.</p>
             </div>
-            <div class="form-group">
-              <label>Etiqueta categoría</label>
-              <input type="text" name="categoryLabel" placeholder="Suplementos" />
+          </div>
+        </section>
+
+        <!-- Formulario: Editar / Agregar producto -->
+        <section id="section-product-form" class="section" style="display:none;">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Catálogo</p>
+              <h2 id="product-form-title">Editar producto</h2>
+              <p class="sub">Completa los datos del producto y guarda para publicar los cambios.</p>
             </div>
-            <div class="form-group">
-              <label>Subcategoría</label>
-              <input type="text" name="subcategory" placeholder="creatinas" />
-            </div>
-            <div class="form-group">
-              <label>Etiqueta subcategoría</label>
-              <input type="text" name="subcategoryLabel" placeholder="Creatinas" />
-            </div>
-            <div class="form-group">
-              <label>Precio (USD) *</label>
-              <input type="number" name="price" step="0.01" required min="0" placeholder="25.00" />
-            </div>
-            <div class="form-group">
-              <label>Imagen (ruta)</label>
-              <input type="text" name="image" placeholder="/assets/products/suplements/imagen.png" />
-            </div>
-            <div class="form-group">
-              <label>Descripción</label>
-              <textarea name="description" rows="3" placeholder="Descripción del producto..."></textarea>
-            </div>
-            <div class="form-group">
-              <label>Stock</label>
-              <input type="number" name="stock" step="1" min="0" placeholder="2" />
-            </div>
-            <div class="form-group">
-              <label>Marca</label>
-              <input type="text" name="brand" placeholder="Optimum Nutrition" />
-            </div>
-            <div class="form-group form-checkbox">
-              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
-                <input type="checkbox" name="available" />
-                <span>¿Disponible para la venta?</span>
-              </label>
-            </div>
-            <div class="form-group form-checkbox">
-              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
-                <input type="checkbox" name="featured" />
-                <span>¿Producto destacado?</span>
-              </label>
+            <button id="back-to-products" class="btn btn-ghost">← Volver</button>
+          </div>
+
+          <form id="product-form" class="form-card">
+            <input type="hidden" name="_originalId" />
+
+            <div class="form-block">
+              <div class="block-title">Información principal</div>
+              <div class="grid grid-2">
+                <div class="form-group">
+                  <label>ID del producto <small>(único)</small></label>
+                  <input type="text" name="id" required placeholder="suplemento-001" />
+                </div>
+                <div class="form-group">
+                  <label>Nombre *</label>
+                  <input type="text" name="name" required placeholder="Creatina Monohidratada..." />
+                </div>
+                <div class="form-group">
+                  <label>Marca</label>
+                  <input type="text" name="brand" placeholder="Optimum Nutrition" />
+                </div>
+                <div class="form-group">
+                  <label>Precio (USD) *</label>
+                  <input type="number" name="price" step="0.01" required min="0" placeholder="25.00" />
+                </div>
+                <div class="form-group span-2">
+                  <label>Descripción</label>
+                  <textarea name="description" rows="4" placeholder="Descripción del producto..."></textarea>
+                </div>
+              </div>
             </div>
 
-            <div class="form-actions">
+            <div class="form-block">
+              <div class="block-title">Clasificación e inventario</div>
+              <div class="grid grid-2">
+                <div class="form-group">
+                  <label>Categoría</label>
+                  <input type="text" name="category" placeholder="suplementos" />
+                </div>
+                <div class="form-group">
+                  <label>Etiqueta categoría</label>
+                  <input type="text" name="categoryLabel" placeholder="Suplementos" />
+                </div>
+                <div class="form-group">
+                  <label>Subcategoría</label>
+                  <input type="text" name="subcategory" placeholder="creatinas" />
+                </div>
+                <div class="form-group">
+                  <label>Etiqueta subcategoría</label>
+                  <input type="text" name="subcategoryLabel" placeholder="Creatinas" />
+                </div>
+                <div class="form-group">
+                  <label>Stock</label>
+                  <input type="number" name="stock" step="1" min="0" placeholder="2" />
+                </div>
+                <div class="form-group">
+                  <label>Imagen (ruta)</label>
+                  <input type="text" name="image" placeholder="/assets/products/suplements/imagen.png" />
+                </div>
+              </div>
+            </div>
+
+            <div class="form-block">
+              <div class="block-title">Visibilidad</div>
+              <div class="checks-row">
+                <label class="check-card">
+                  <input type="checkbox" name="available" />
+                  <span>
+                    <strong>Disponible para la venta</strong>
+                    <small>El producto se puede comprar en la tienda.</small>
+                  </span>
+                </label>
+                <label class="check-card">
+                  <input type="checkbox" name="featured" />
+                  <span>
+                    <strong>Producto destacado</strong>
+                    <small>Resáltalo en secciones destacadas.</small>
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-actions between">
               <button type="button" id="delete-product-btn" class="btn btn-danger btn-outline" style="display:none;">Eliminar producto</button>
-              <button type="submit" class="btn btn-primary btn-full">Guardar producto</button>
+              <button type="submit" class="btn btn-primary">Guardar producto</button>
             </div>
-          </div>
-        </form>
-      </section>
+          </form>
+        </section>
+      </div>
     </div>
   </div>
 
