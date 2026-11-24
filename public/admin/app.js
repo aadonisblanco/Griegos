@@ -95,47 +95,61 @@
     let products = null;
     let source = "";
 
-    /* Intento 1: API del Worker (más confiable, ya probada) */
-    try {
-      const res = await fetch(`${API_BASE}/products?available=true`, { cache: "no-store" });
-      if (res.ok) {
-        products = await res.json();
-        source = "API del Worker";
+    /* Intento 1: GitHub API (fuente de verdad para edición, evita datos viejos del Worker) */
+    if (state.githubToken) {
+      try {
+        const { content } = await githubGetFile(PATH_PRODUCTS);
+        const parsed = JSON.parse(content);
+        if (Array.isArray(parsed)) {
+          products = parsed;
+          source = "GitHub";
+        }
+      } catch (e) {
+        console.warn("GitHub API falló:", e.message);
       }
-    } catch (e) {
-      console.warn("Worker API falló:", e.message);
     }
 
-    /* Intento 2: Pages directamente */
+    /* Intento 2: Pages directamente (refleja lo desplegado) */
     if (!products || !Array.isArray(products) || products.length === 0) {
       try {
         const res = await fetch(`${PAGES_BASE}/data/products.json`, { cache: "no-store" });
         if (res.ok) {
-          products = await res.json();
-          source = "Pages directo";
+          const parsed = await res.json();
+          if (Array.isArray(parsed)) {
+            products = parsed;
+            source = "Pages";
+          }
         }
       } catch (e) {
         console.warn("Pages directo falló:", e.message);
       }
     }
 
-    /* Intento 3: GitHub API (requiere token) */
+    /* Intento 3: API del Worker (respaldo de solo lectura) */
     if (!products || !Array.isArray(products) || products.length === 0) {
-      if (state.githubToken) {
-        try {
-          const { content } = await githubGetFile(PATH_PRODUCTS);
-          products = JSON.parse(content);
-          source = "GitHub API";
-        } catch (e) {
-          console.warn("GitHub API falló:", e.message);
+      try {
+        const res = await fetch(`${API_BASE}/products?available=true`, { cache: "no-store" });
+        if (res.ok) {
+          const parsed = await res.json();
+          if (Array.isArray(parsed)) {
+            products = parsed;
+            source = "Worker API (respaldo)";
+          }
         }
+      } catch (e) {
+        console.warn("Worker API falló:", e.message);
       }
     }
 
-    if (products && Array.isArray(products) && products.length > 0) {
+    if (products && Array.isArray(products)) {
       state.products = products;
       renderProductsTable();
-      setMessage(`Productos cargados desde ${source} (${products.length} ítems).`);
+      if (products.length > 0) {
+        setMessage(`Productos cargados desde ${source} (${products.length} ítems).`);
+      } else {
+        els.productsEmpty.style.display = "block";
+        setMessage(`Catálogo vacío cargado desde ${source}.`, "error");
+      }
     } else {
       els.productsEmpty.style.display = "block";
       setMessage("No se pudieron cargar los productos. Revisa tu conexión o el token de GitHub.", "error");
@@ -147,23 +161,27 @@
     let config = null;
     let source = "";
 
-    try {
-      const res = await fetch(`${PAGES_BASE}/data/config.json`, { cache: "no-store" });
-      if (res.ok) {
-        config = await res.json();
-        source = "Pages directo";
-      }
-    } catch (e) {
-      console.warn("Pages config falló:", e.message);
-    }
-
-    if (!config && state.githubToken) {
+    /* Intento 1: GitHub API (fuente de verdad para edición) */
+    if (state.githubToken) {
       try {
         const { content } = await githubGetFile(PATH_CONFIG);
         config = JSON.parse(content);
-        source = "GitHub API";
+        source = "GitHub";
       } catch (e) {
         console.warn("GitHub config falló:", e.message);
+      }
+    }
+
+    /* Intento 2: Pages directamente */
+    if (!config) {
+      try {
+        const res = await fetch(`${PAGES_BASE}/data/config.json`, { cache: "no-store" });
+        if (res.ok) {
+          config = await res.json();
+          source = "Pages";
+        }
+      } catch (e) {
+        console.warn("Pages config falló:", e.message);
       }
     }
 
@@ -172,7 +190,6 @@
       renderConfigForm();
       setMessage(`Configuración cargada desde ${source}.`);
     } else {
-      // Config por defecto para que no se rompa el formulario
       state.config = {
         siteName: "GRIEGOS Fitness Shop",
         whatsappPhone: "5353012721",
@@ -181,7 +198,7 @@
         messages: { general: "Hola, GRIEGOS.", order: "Hola, GRIEGOS." }
       };
       renderConfigForm();
-      setMessage("Usando configuración por defecto. Ingresa token de GitHub para cargar la real.", "error");
+      setMessage("Usando configuración por defecto. Revisa tu conexión o el token de GitHub.", "error");
     }
   }
 
